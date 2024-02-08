@@ -10,5 +10,5 @@
 #define RIVAHOOK_API __declspec(dllimport)
 #endif
 
-extern "C" RIVAHOOK_API int displayText(void);
-extern "C" RIVAHOOK_API int clearText(void);
+extern "C" RIVAHOOK_API int displayText(const char* id, const char* text, int x, int y, int size);
+extern "C" RIVAHOOK_API int clearText(const char* id);
