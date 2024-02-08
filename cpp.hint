@@ -1,0 +1,2 @@
+#define RIVAHOOK_API __declspec(dllexport)
+#define RIVAHOOK_API __declspec(dllimport)
