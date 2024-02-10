@@ -15,19 +15,25 @@ BOOL UpdateOSD(LPCSTR lpText, LPCSTR mapName)
 		LPVOID pMapAddr = MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, 0);
 		LPRTSS_SHARED_MEMORY pMem = (LPRTSS_SHARED_MEMORY)pMapAddr;
 
+		BOOL preferLastSlot = false;
+		if (mapName == PLACEHOLDER_NAME) {
+			// As long as we keep the placeholder in the last available slot we should be getting the original OSD on top
+			preferLastSlot = true;
+		}
+
 		if (pMem)
 		{
-			if ((pMem->dwSignature == 'RTSS') &&
-				(pMem->dwVersion >= 0x00020000))
+			if (pMem->dwSignature == 'RTSS' && pMem->dwVersion >= 0x00020000)
 			{
 				for (DWORD dwPass = 0; dwPass < 2; dwPass++)
 					//1st pass : find previously captured OSD slot
 					//2nd pass : otherwise find the first unused OSD slot and capture it
 				{
-					for (DWORD dwEntry = 1; dwEntry < pMem->dwOSDArrSize; dwEntry++)
+					for (DWORD i = 1; i < pMem->dwOSDArrSize; i++)
 						//allow primary OSD clients (i.e. EVGA Precision / MSI Afterburner) to use the first slot exclusively, so third party
 						//applications start scanning the slots from the second one
 					{
+						DWORD dwEntry = preferLastSlot ? pMem->dwOSDArrSize - i : i;
 						RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_OSD_ENTRY pEntry = (RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_OSD_ENTRY)((LPBYTE)pMem + pMem->dwOSDArrOffset + dwEntry * pMem->dwOSDEntrySize);
 
 						if (dwPass)
@@ -64,9 +70,7 @@ BOOL UpdateOSD(LPCSTR lpText, LPCSTR mapName)
 								lstrcpynA(pEntry->szOSD, lpText, sizeof(pEntry->szOSD) - 1);
 
 							pMem->dwOSDFrame++;
-
 							bResult = TRUE;
-
 							break;
 						}
 					}
@@ -97,8 +101,7 @@ void ReleaseOSD(LPCSTR mapName)
 
 		if (pMem)
 		{
-			if ((pMem->dwSignature == 'RTSS') &&
-				(pMem->dwVersion >= 0x00020000))
+			if (pMem->dwSignature == 'RTSS' && pMem->dwVersion >= 0x00020000)
 			{
 				for (DWORD dwEntry = 1; dwEntry < pMem->dwOSDArrSize; dwEntry++)
 				{

@@ -12,3 +12,6 @@
 
 extern "C" RIVAHOOK_API int displayText(const char* id, const char* text, int x, int y, int size);
 extern "C" RIVAHOOK_API int clearText(const char* id);
+extern "C" RIVAHOOK_API int test();
+
+void refreshPlaceholder();  // Not necessary to export (yet?)
